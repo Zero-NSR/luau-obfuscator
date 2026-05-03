@@ -59,3 +59,51 @@ button {
 button:hover {
   background: #16a34a;
 }
+
+.menu-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  font-size: 28px;
+  cursor: pointer;
+  z-index: 1000;
+  user-select: none;
+}
+
+.side-menu {
+  position: fixed;
+  top: 0;
+  left: -240px;
+  width: 240px;
+  height: 100%;
+  background: #0f172a;
+  padding: 20px;
+  transition: 0.3s;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 999;
+}
+
+.side-menu.open {
+  left: 0;
+}
+
+.side-menu h3 {
+  margin: 0 0 10px 0;
+  color: #fff;
+}
+
+.menu-item {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.menu-item:hover {
+  background: #334155;
+}
