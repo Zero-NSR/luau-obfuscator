@@ -77,28 +77,25 @@ return ${f}()
 `;
 }
 
-// فك تشفير محسّن (يقرأ المتغيرات الحقيقية بالاسم)
 function testDecrypt(obf) {
-  // key
-  const keyMatch = obf.match(/local\s+([_%w]+)\s*=\s*(\d+)/);
+  const keyMatch = obf.match(/local\s+[A-Za-z0-9_]+\s*=\s*(\d+)\s*\n/);
   if (!keyMatch) return "Key not found";
-  const key = Number(keyMatch[2]);
+  const key = Number(keyMatch[1]);
 
-  // d و v
-  const arrayMatches = [...obf.matchAll(/local\s+([_%w]+)\s*=\s*\{([0-9,\s]+)\}/g)];
-  if (arrayMatches.length < 2) return "Arrays not found";
+  const arrays = [...obf.matchAll(/local\s+[A-Za-z0-9_]+\s*=\s*\{([0-9,\s]+)\}/g)];
+  if (arrays.length < 2) return "Arrays not found";
 
-  const dArr = arrayMatches[0][2].split(",").map(n => Number(n.trim()));
-  const vArr = arrayMatches[1][2].split(",").map(n => Number(n.trim()));
+  const dArr = arrays[0][1].split(",").map(n => Number(n.trim()));
+  const vArr = arrays[1][1].split(",").map(n => Number(n.trim()));
 
-  if (dArr.length !== vArr.length || dArr.length === 0) return "Invalid data";
+  if (dArr.length !== vArr.length || dArr.length === 0)
+    return "Invalid d/v data";
 
   let tmp = [];
   for (let i = 0; i < dArr.length; i++) {
-    const pos = dArr[i];
-    const val = vArr[i];
-    tmp[pos - 1] = String.fromCharCode(val ^ key);
+    tmp[dArr[i] - 1] = String.fromCharCode(vArr[i] ^ key);
   }
+
   return tmp.join("");
 }
 
