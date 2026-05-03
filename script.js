@@ -30,7 +30,6 @@ function obfuscateLuauStrong(code) {
   const t = "_t" + randomInt(1000, 9999);
   const s = "_s" + randomInt(1000, 9999);
   const f = "_f" + randomInt(1000, 9999);
-
   const fakeD = "_fd" + randomInt(1000, 9999);
   const fakeV = "_fv" + randomInt(1000, 9999);
 
@@ -78,22 +77,28 @@ return ${f}()
 `;
 }
 
-function testDecrypt(code) {
-  const idx = code.match(/\{([0-9,]+)\}/);
-  const val = code.match(/\{([0-9,]+)\}/g)[1];
-  const key = code.match(/local _k\d+ = (\d+)/);
+// فك تشفير محسّن (يقرأ المتغيرات الحقيقية بالاسم)
+function testDecrypt(obf) {
+  // key
+  const keyMatch = obf.match(/local\s+([_%w]+)\s*=\s*(\d+)/);
+  if (!keyMatch) return "Key not found";
+  const key = Number(keyMatch[2]);
 
-  if (!idx || !val || !key) return "Error";
+  // d و v
+  const arrayMatches = [...obf.matchAll(/local\s+([_%w]+)\s*=\s*\{([0-9,\s]+)\}/g)];
+  if (arrayMatches.length < 2) return "Arrays not found";
 
-  const indexes = idx[1].split(",").map(Number);
-  const values = val[1].split(",").map(Number);
-  const k = Number(key[1]);
+  const dArr = arrayMatches[0][2].split(",").map(n => Number(n.trim()));
+  const vArr = arrayMatches[1][2].split(",").map(n => Number(n.trim()));
+
+  if (dArr.length !== vArr.length || dArr.length === 0) return "Invalid data";
 
   let tmp = [];
-  for (let i = 0; i < indexes.length; i++) {
-    tmp[indexes[i] - 1] = String.fromCharCode(values[i] ^ k);
+  for (let i = 0; i < dArr.length; i++) {
+    const pos = dArr[i];
+    const val = vArr[i];
+    tmp[pos - 1] = String.fromCharCode(val ^ key);
   }
-
   return tmp.join("");
 }
 
