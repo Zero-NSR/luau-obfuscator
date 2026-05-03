@@ -10,6 +10,7 @@ function shuffleArray(arr) {
   return arr;
 }
 
+// تشفير d/v
 function obfuscateLuauStrong(code) {
   const key = randomInt(5, 200);
 
@@ -77,26 +78,58 @@ return ${f}()
 `;
 }
 
-function testDecrypt(obf) {
+// فك d/v
+function decryptDV(obf) {
   const keyMatch = obf.match(/local\s+[A-Za-z0-9_]+\s*=\s*(\d+)\s*\n/);
-  if (!keyMatch) return "Key not found";
+  if (!keyMatch) return null;
   const key = Number(keyMatch[1]);
 
   const arrays = [...obf.matchAll(/local\s+[A-Za-z0-9_]+\s*=\s*\{([0-9,\s]+)\}/g)];
-  if (arrays.length < 2) return "Arrays not found";
+  if (arrays.length < 2) return null;
 
   const dArr = arrays[0][1].split(",").map(n => Number(n.trim()));
   const vArr = arrays[1][1].split(",").map(n => Number(n.trim()));
-
-  if (dArr.length !== vArr.length || dArr.length === 0)
-    return "Invalid d/v data";
+  if (dArr.length !== vArr.length || dArr.length === 0) return null;
 
   let tmp = [];
   for (let i = 0; i < dArr.length; i++) {
     tmp[dArr[i] - 1] = String.fromCharCode(vArr[i] ^ key);
   }
-
   return tmp.join("");
+}
+
+// فك النمط: "\055\066\121..."
+function decryptSlashOct(code) {
+  const m = code.match(/local X=\{(.-)\}/s);
+  if (!m) return null;
+
+  const inner = m[1]; // "\055\066...","..."
+  const strMatches = [...inner.matchAll(/"([^"]*)"/g)];
+  if (strMatches.length === 0) return null;
+
+  let out = "";
+  for (const sm of strMatches) {
+    const part = sm[1]; // \055\066\121...
+    const octs = part.split("\\").filter(Boolean);
+    for (const o of octs) {
+      const n = parseInt(o, 10);
+      if (!isNaN(n)) out += String.fromCharCode(n);
+    }
+  }
+  return out;
+}
+
+// اختيار تلقائي
+function testDecrypt(obf) {
+  if (/local bit = bit32 or bit/.test(obf)) {
+    const r = decryptDV(obf);
+    return r || "Failed to decrypt (dv)";
+  }
+  if (/return\(function\.\.\.local X=\{/.test(obf.replace(/\s+/g, ""))) {
+    const r = decryptSlashOct(obf);
+    return r || "Failed to decrypt (oct)";
+  }
+  return "Unknown format";
 }
 
 document.getElementById("obfuscateBtn").addEventListener("click", () => {
