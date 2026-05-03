@@ -76,11 +76,7 @@ document.getElementById("copyBtn").addEventListener("click", () => {
     alert("ما فيه ناتج لسه.");
     return;
   }
-  out.select();
-  out.setSelectionRange(0, 999999);
   navigator.clipboard.writeText(out.value).then(() => {
     alert("تم النسخ ✅");
-  }).catch(() => {
-    alert("ما قدر ينسخ، انسخ يدوي.");
   });
 });
