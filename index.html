@@ -6,21 +6,31 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>Luau Obfuscator</h1>
 
-    <label>Original Luau Code</label>
-    <textarea id="input" placeholder="Paste your Luau code here"></textarea>
+<div class="menu-btn" id="menuBtn">☰</div>
 
-    <div class="buttons">
-      <button id="obfuscateBtn">Convert / Obfuscate</button>
-      <button id="copyBtn">Copy Result</button>
-    </div>
+<div class="side-menu" id="sideMenu">
+  <h3>القائمة</h3>
+  <button class="menu-item" data-page="encrypt">🔐 التشفير</button>
+  <button class="menu-item" data-page="decrypt">🔓 فك التشفير</button>
+</div>
 
-    <label>Obfuscated Code</label>
-    <textarea id="output" placeholder="Obfuscated code will appear here"></textarea>
+<div class="container">
+  <h1>Luau Obfuscator</h1>
+
+  <label>Input</label>
+  <textarea id="input"></textarea>
+
+  <div class="buttons">
+    <button id="obfuscateBtn">Convert / Obfuscate</button>
+    <button id="decryptBtn">Test Decrypt</button>
+    <button id="copyBtn">Copy Result</button>
   </div>
 
-  <script src="script.js"></script>
+  <label>Output</label>
+  <textarea id="output"></textarea>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
