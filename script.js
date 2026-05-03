@@ -15,8 +15,7 @@ function obfuscateLuauStrong(code) {
 
   let bytes = [];
   for (let i = 0; i < code.length; i++) {
-    const c = code.charCodeAt(i);
-    bytes.push(c ^ key);
+    bytes.push(code.charCodeAt(i) ^ key);
   }
 
   let indexed = bytes.map((v, i) => ({ i: i + 1, v }));
@@ -25,58 +24,116 @@ function obfuscateLuauStrong(code) {
   const indexList = indexed.map(o => o.i).join(",");
   const valueList = indexed.map(o => o.v).join(",");
 
-  const varDataIdx = "_d" + randomInt(1000, 9999);
-  const varDataVal = "_v" + randomInt(1000, 9999);
-  const varKey = "_k" + randomInt(1000, 9999);
-  const varTmp = "_t" + randomInt(1000, 9999);
-  const varSrc = "_s" + randomInt(1000, 9999);
-  const varFn = "_f" + randomInt(1000, 9999);
+  const d = "_d" + randomInt(1000, 9999);
+  const v = "_v" + randomInt(1000, 9999);
+  const k = "_k" + randomInt(1000, 9999);
+  const t = "_t" + randomInt(1000, 9999);
+  const s = "_s" + randomInt(1000, 9999);
+  const f = "_f" + randomInt(1000, 9999);
 
-  const loader = `
+  const fakeD = "_fd" + randomInt(1000, 9999);
+  const fakeV = "_fv" + randomInt(1000, 9999);
+
+  const fakeDList = Array.from({ length: 8 }, () => randomInt(1, code.length + 20)).join(",");
+  const fakeVList = Array.from({ length: 8 }, () => randomInt(50, 255)).join(",");
+
+  return `
 local bit = bit32 or bit
-local ${varKey} = ${key}
-local ${varDataIdx} = {${indexList}}
-local ${varDataVal} = {${valueList}}
-local ${varTmp} = {}
-for n = 1, #${varDataIdx} do
-    local pos = ${varDataIdx}[n]
-    local val = ${varDataVal}[n]
-    ${varTmp}[pos] = string.char(bit.bxor(val, ${varKey}))
+local ${k} = ${key}
+local ${d} = {${indexList}}
+local ${v} = {${valueList}}
+local ${t} = {}
+
+if #${d} == 0 or #${d} ~= #${v} then
+    error("corrupted chunk")
 end
-local ${varSrc} = table.concat(${varTmp})
-local ${varFn}, err = loadstring(${varSrc})
-if not ${varFn} then
+
+for n = 1, #${d} do
+    local pos = ${d}[n]
+    local val = ${v}[n]
+    ${t}[pos] = string.char(bit.bxor(val, ${k}))
+end
+
+local ${s} = table.concat(${t})
+
+if #${s} < 5 then
+    error("invalid chunk")
+end
+
+local ${fakeD} = {${fakeDList}}
+local ${fakeV} = {${fakeVList}}
+pcall(function()
+    local _x = {}
+    for i = 1, #${fakeD} do
+        _x[i] = string.char(bit.bxor(${fakeV}[i], ${key} + 1))
+    end
+end)
+
+local ${f}, err = loadstring(${s})
+if not ${f} then
     return error("obfuscated chunk error: "..tostring(err))
 end
-do
-    local junk = {1,2,3,4,5}
-    for i = 1, #junk do
-        junk[i] = junk[i] * (i + ${key})
-    end
-end
-return ${varFn}()
-`;
 
-  return loader;
+return ${f}()
+`;
+}
+
+function testDecrypt(code) {
+  const idx = code.match(/\{([0-9,]+)\}/);
+  const val = code.match(/\{([0-9,]+)\}/g)[1];
+  const key = code.match(/local _k\d+ = (\d+)/);
+
+  if (!idx || !val || !key) return "Error";
+
+  const indexes = idx[1].split(",").map(Number);
+  const values = val[1].split(",").map(Number);
+  const k = Number(key[1]);
+
+  let tmp = [];
+  for (let i = 0; i < indexes.length; i++) {
+    tmp[indexes[i] - 1] = String.fromCharCode(values[i] ^ k);
+  }
+
+  return tmp.join("");
 }
 
 document.getElementById("obfuscateBtn").addEventListener("click", () => {
   const input = document.getElementById("input").value;
-  if (!input.trim()) {
-    alert("اكتب كود Luau أول.");
-    return;
-  }
-  const obfuscated = obfuscateLuauStrong(input);
-  document.getElementById("output").value = obfuscated;
+  document.getElementById("output").value = obfuscateLuauStrong(input);
+});
+
+document.getElementById("decryptBtn").addEventListener("click", () => {
+  const input = document.getElementById("input").value;
+  document.getElementById("output").value = testDecrypt(input);
 });
 
 document.getElementById("copyBtn").addEventListener("click", () => {
-  const out = document.getElementById("output");
-  if (!out.value.trim()) {
-    alert("ما فيه ناتج لسه.");
-    return;
-  }
-  navigator.clipboard.writeText(out.value).then(() => {
-    alert("تم النسخ ✅");
+  navigator.clipboard.writeText(document.getElementById("output").value);
+});
+
+const menuBtn = document.getElementById("menuBtn");
+const sideMenu = document.getElementById("sideMenu");
+
+menuBtn.addEventListener("click", () => {
+  sideMenu.classList.toggle("open");
+});
+
+document.querySelectorAll(".menu-item").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const page = btn.getAttribute("data-page");
+
+    if (page === "encrypt") {
+      document.querySelector("h1").innerText = "Luau Obfuscator";
+      document.getElementById("input").placeholder = "Paste your Luau code here";
+      document.getElementById("output").placeholder = "Obfuscated code will appear here";
+    }
+
+    if (page === "decrypt") {
+      document.querySelector("h1").innerText = "Decrypt Tester";
+      document.getElementById("input").placeholder = "Paste obfuscated code here";
+      document.getElementById("output").placeholder = "Decrypted result will appear here";
+    }
+
+    sideMenu.classList.remove("open");
   });
 });
