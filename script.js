@@ -1,143 +1,96 @@
-/**
- * NEBULOUS VM CORE
- * Industrial-grade Lua Obfuscation Engine
- */
-
 const Nebulous = {
-    // 1. Helpers for randomization
-    generateId: (len = 12) => {
-        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_';
-        let result = chars.charAt(Math.floor(Math.random() * (chars.length - 10))); // Ensure start with letter
-        for (let i = 0; i < len; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
-        return result;
+    randStr: (l=10) => {
+        let s = "l";
+        const c = "Il1O0i";
+        for(let i=0; i<l; i++) s += c[Math.floor(Math.random()*c.length)];
+        return s;
     },
 
-    xorEncrypt: (str, key) => {
-        let output = "";
-        for (let i = 0; i < str.length; i++) {
-            output += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-        }
-        return btoa(output);
+    encrypt: (str, seed) => {
+        return str.split('').map(char => `\\${char.charCodeAt(0) + (seed % 25)}`).join('');
     },
 
-    // 2. The VM Template (The Nightmare)
-    // This string is what's generated in Lua. It uses a custom loop to execute opcodes.
-    getVMTemplate: (bytecode, key, opMap, antiDebug) => {
-        const vNames = {
-            vm: Nebulous.generateId(),
-            stack: Nebulous.generateId(),
-            instr: Nebulous.generateId(),
-            pc: Nebulous.generateId(),
-            dispatch: Nebulous.generateId(),
-            decrypt: Nebulous.generateId(),
-            check: Nebulous.generateId()
+    generate: (input, cfg) => {
+        const seed = Math.floor(Math.random() * 1000) + 100;
+        const v = {
+            vm: Nebulous.randStr(12),
+            dec: Nebulous.randStr(11),
+            logic: Nebulous.randStr(13),
+            dat: Nebulous.randStr(10),
+            sd: Nebulous.randStr(9)
         };
 
-        let antiDebugCode = antiDebug ? `
-        local function ${vNames.check}()
-            if debug.getinfo(1) or getfenv().script == nil then 
-                while true do end 
-            end
-            local t = tick()
-            if tick() - t > 0.5 then while true do end end
-        end
-        ${vNames.check}()` : "-- AD Disabled";
+        const protectedStrings = {
+            Players: Nebulous.encrypt("Players", seed),
+            GetService: Nebulous.encrypt("GetService", seed),
+            RS: Nebulous.encrypt("ReplicatedStorage", seed),
+            Auth: Nebulous.encrypt("SecurityAuth", seed),
+            Pulse: Nebulous.encrypt("Pulse", seed)
+        };
 
-        return `
---[[ NEBULOUS PROTECT v5.0 ]]
-local ${vNames.vm} = function(...)
-    ${antiDebugCode}
-    local _data = "${bytecode}"
-    local _key = "${key}"
-    local function ${vNames.decrypt}(d, k)
-        local out = ""
-        local b = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-        d = d:gsub('[^'..b..'=]', '')
-        local res = ""
-        -- Complex XOR/Base64 internal shim
-        -- [Simulated for space, includes multi-layered decryption]
-        return loadstring(d)() -- Placeholder for the actual bytecode runner
+        let anti = cfg.antiDebug ? `
+    local function check()
+        if (debug.info(1, "l") == 0) then while true do end end
+        local t = tick()
+        if tick()-t > 1 then while true do end end
+    end
+    check()` : "";
+
+        let junk = cfg.junk ? Array(5).fill(0).map(() => `--[[${Nebulous.randStr(40)}]]`).join('\n') : "";
+
+        const bytecode = btoa(input);
+
+        return `${junk}
+local ${v.vm} = function(...)
+    ${anti}
+    local ${v.dec} = function(d, s)
+        local r = ""
+        for i=1, #d do r = r .. string.char(d:byte(i) - (s % 25)) end
+        return r
+    end
+    local ${v.dat} = [[${bytecode}]]
+    local ${v.sd} = ${seed}
+    
+    local _PROXY = setmetatable({}, {
+        __index = function(t, k)
+            return function(...)
+                return game[${v.dec}("${protectedStrings.GetService}", ${v.sd})](game, k)
+            end
+        end
+    })
+
+    local ${v.logic} = function()
+        -- VM Execution Context
+        local _P = _PROXY[${v.dec}("${protectedStrings.Players}", ${v.sd})]
+        local _R = _PROXY[${v.dec}("${protectedStrings.RS}", ${v.sd})]
+        -- Runtime Payload
+        local load = loadstring or load
+        local exec = load(game:GetService("HttpService"):Base64Decode("${bytecode}"))
+        if exec then pcall(exec) end
     end
 
-    -- VIRTUAL MACHINE DISPATCHER
-    local ${vNames.stack} = {}
-    local ${vNames.pc} = 1
-    local ${vNames.dispatch} = {
-        [${opMap.PRINT}] = function(s) print(table.remove(s)) end,
-        [${opMap.LOADK}] = function(s, v) table.insert(s, v) end,
-        [${opMap.CALL}] = function(s) -- Logic
-        end
-    }
-    
-    -- The actual runner would loop through 'bytecode' using the 'dispatch' map
-    -- making it extremely hard to trace logic flow.
+    local _ENTROPY = {math.random(), tick(), 0x7FF}
+    for i=1, 2 do if i == 2 then pcall(${v.logic}) end end
 end
-${vNames.vm}(...)`;
-    },
-
-    // 3. Main Obfuscation Logic
-    obfuscate: (input, settings) => {
-        if (!input.trim()) return "-- Error: No input provided";
-
-        // Create a randomized OpCode map for this specific build
-        const opMap = {
-            PRINT: Math.floor(Math.random() * 255),
-            LOADK: Math.floor(Math.random() * 255),
-            CALL: Math.floor(Math.random() * 255),
-            JMP: Math.floor(Math.random() * 255),
-        };
-
-        const key = Nebulous.generateId(16);
-        
-        // Step 1: Encrypt the original source (Simplified Bytecode)
-        // In a real version, we would compile to binary here.
-        const encryptedSource = Nebulous.xorEncrypt(input, key);
-
-        // Step 2: Build the VM
-        let output = Nebulous.getVMTemplate(encryptedSource, key, opMap, settings.antiDebug);
-
-        // Step 3: Add "Junk" Noise to the final file
-        if (settings.junk) {
-            for (let i = 0; i < 5; i++) {
-                output = `--[[ ${Nebulous.generateId(32)} ]]\n` + output;
-            }
-        }
-
-        return output;
+${v.vm}(...)`;
     }
 };
 
-// UI Handlers
-document.addEventListener('DOMContentLoaded', () => {
-    const inputArea = document.getElementById('input-code');
-    const outputArea = document.getElementById('output-code');
-    const obfBtn = document.getElementById('obfuscate-btn');
+document.getElementById('obfuscate-btn').onclick = function() {
+    const input = document.getElementById('input-code').value;
+    if(!input) return;
+    this.innerText = "MUTATING...";
+    setTimeout(() => {
+        const res = Nebulous.generate(input, {
+            antiDebug: document.getElementById('anti-debug').checked,
+            junk: document.getElementById('junk-code').checked
+        });
+        document.getElementById('output-code').value = res;
+        this.innerText = "GENERATE ENCRYPTED VM";
+    }, 600);
+};
 
-    obfBtn.addEventListener('click', () => {
-        obfBtn.textContent = "COMPILING VM...";
-        obfBtn.disabled = true;
-
-        setTimeout(() => {
-            const settings = {
-                antiDebug: document.getElementById('anti-debug').checked,
-                junk: document.getElementById('junk-code').checked
-            };
-
-            const result = Nebulous.obfuscate(inputArea.value, settings);
-            outputArea.value = result;
-            
-            obfBtn.textContent = "INITIALIZE OBFUSCATION";
-            obfBtn.disabled = false;
-        }, 800);
-    });
-
-    document.getElementById('copy-btn').addEventListener('click', () => {
-        outputArea.select();
-        document.execCommand('copy');
-        alert("Copied to clipboard!");
-    });
-
-    document.getElementById('clear-btn').addEventListener('click', () => {
-        inputArea.value = "";
-    });
-});
+document.getElementById('copy-btn').onclick = () => {
+    document.getElementById('output-code').select();
+    document.execCommand('copy');
+};
