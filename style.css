@@ -1,82 +1,122 @@
-:root{
-  --bg:#0f1115;
-  --panel:#0b0c0f;
-  --text:#e6eef8;
-  --accent:#00d27a;
-  --muted:#9aa6b2;
-  --input-bg:#071018;
+:root {
+    --bg-color: #0a0a0c;
+    --panel-color: #141417;
+    --border-color: #2a2a30;
+    --accent-color: #00ff9d;
+    --text-primary: #e0e0e0;
+    --text-secondary: #88888e;
+    --error-color: #ff4d4d;
 }
 
-body.light{
-  --bg:#f6f8fb;
-  --panel:#ffffff;
-  --text:#0b1220;
-  --accent:#007b4f;
-  --muted:#55606a;
-  --input-bg:#f0f4f8;
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
 }
 
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Inter, system-ui, Arial, sans-serif;
-  background:linear-gradient(180deg,var(--bg),#071018 80%);
-  color:var(--text);
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:24px;
+.container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 1rem;
 }
 
-header{
-  width:100%;
-  max-width:1100px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:18px;
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
 }
 
-h1{margin:0;font-size:20px}
-.controls{display:flex;gap:8px;align-items:center}
-
-button{
-  background:var(--accent);
-  color:#021014;
-  border:none;
-  padding:8px 12px;
-  border-radius:6px;
-  cursor:pointer;
-  font-weight:600;
-}
-button.secondary{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.04)}
-
-main{
-  width:100%;
-  max-width:1100px;
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 2px;
 }
 
-.panel{
-  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border:1px solid rgba(255,255,255,0.03);
-  padding:14px;
-  border-radius:10px;
-  margin-bottom:14px;
+.logo span { color: var(--accent-color); }
+
+.highlight { color: var(--accent-color); font-weight: bold; }
+
+.editor-section { margin-bottom: 1.5rem; }
+
+.label-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
 }
 
-textarea{
-  width:100%;
-  min-height:160px;
-  background:var(--input-bg);
-  color:var(--text);
-  border-radius:8px;
-  padding:12px;
-  border:1px solid rgba(255,255,255,0.03);
-  resize:vertical;
-  font-family: monospace;
-  font-size:13px;
+textarea {
+    width: 100%;
+    height: 250px;
+    background: var(--panel-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--accent-color);
+    padding: 1rem;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9rem;
+    resize: vertical;
+    outline: none;
 }
 
-.row{display:flex;gap:8px;margin-top:8px}
-footer{margin-top:8px;color:var(--muted);font-size:12px;text-align:center}
+textarea:focus { border-color: var(--accent-color); }
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: var(--panel-color);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.primary-btn {
+    background: var(--accent-color);
+    color: #000;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.primary-btn:active { transform: scale(0.98); }
+
+.btn-text {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.btn-text:hover { color: var(--accent-color); }
+
+.options { display: flex; gap: 1rem; }
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+footer {
+    text-align: center;
+    margin-top: 3rem;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
