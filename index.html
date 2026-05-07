@@ -1,36 +1,58 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
-  <meta charset="UTF-8" />
-  <title>Luau Obfuscator</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Zak Obfuscator</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <header>
+    <h1>Zak Obfuscator</h1>
+    <div class="controls">
+      <button id="themeToggle">Dark</button>
+      <select id="modeSelect">
+        <option value="fast">Fast Obfuscate</option>
+        <option value="strong" selected>Strong Multi Layer</option>
+      </select>
+    </div>
+  </header>
 
-<div class="menu-btn" id="menuBtn">☰</div>
+  <main>
+    <section class="panel">
+      <h2>Input</h2>
+      <textarea id="input" placeholder="حط سكربتك هنا..."></textarea>
+      <div class="row">
+        <button id="clearBtn">مسح الكل</button>
+        <button id="obfBtn">Obfuscate</button>
+      </div>
+    </section>
 
-<div class="side-menu" id="sideMenu">
-  <h3>القائمة</h3>
-  <button class="menu-item" data-page="encrypt">🔐 التشفير</button>
-  <button class="menu-item" data-page="decrypt">🔓 فك التشفير</button>
-</div>
+    <section class="panel">
+      <h2>Output</h2>
+      <textarea id="output" placeholder="السكربت المشفّر يطلع هنا..." readonly></textarea>
+      <div class="row">
+        <button id="copyBtn">نسخ</button>
+        <button id="downloadBtn">تحميل</button>
+      </div>
+    </section>
 
-<div class="container">
-  <h1>Luau Obfuscator</h1>
+    <section class="panel">
+      <h2>قائمة فك للاختبار</h2>
+      <textarea id="deobInput" placeholder="حط سكربت مشفّر هنا لتجربة فك بسيط"></textarea>
+      <div class="row">
+        <button id="tryDeobBtn">حاول فك</button>
+        <button id="clearDeobBtn">مسح</button>
+      </div>
+      <textarea id="deobOutput" placeholder="نتيجة محاولة الفك" readonly></textarea>
+    </section>
 
-  <label>Input</label>
-  <textarea id="input"></textarea>
+    <footer>
+      <small>مصنوع بواسطة Zak · استخدم الأداة لحماية كودك فقط</small>
+    </footer>
+  </main>
 
-  <div class="buttons">
-    <button id="obfuscateBtn">Convert / Obfuscate</button>
-    <button id="decryptBtn">Test Decrypt</button>
-    <button id="copyBtn">Copy Result</button>
-  </div>
-
-  <label>Output</label>
-  <textarea id="output"></textarea>
-</div>
-
-<script src="script.js"></script>
+  <script src="obfuscator.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
