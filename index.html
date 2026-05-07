@@ -1,58 +1,61 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Zak Obfuscator</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEBULOUS | Extreme Lua Obfuscator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body>
-  <header>
-    <h1>Zak Obfuscator</h1>
-    <div class="controls">
-      <button id="themeToggle">Dark</button>
-      <select id="modeSelect">
-        <option value="fast">Fast Obfuscate</option>
-        <option value="strong" selected>Strong Multi Layer</option>
-      </select>
+<body class="dark-mode">
+    <div class="container">
+        <header>
+            <div class="logo">NEBULOUS <span>VM</span></div>
+            <div class="status-bar">
+                <span class="status-item">ALGORITHM: <span class="highlight">X-VM-G5</span></span>
+                <span class="status-item">ENTROPY: <span class="highlight">MAXIMUM</span></span>
+            </div>
+        </header>
+
+        <main>
+            <section class="editor-section">
+                <div class="label-row">
+                    <label>INPUT SOURCE (LUA)</label>
+                    <button id="clear-btn" class="btn-text">CLEAR</button>
+                </div>
+                <textarea id="input-code" placeholder="-- Paste your Lua code here..."></textarea>
+            </section>
+
+            <div class="controls">
+                <button id="obfuscate-btn" class="primary-btn">INITIALIZE OBFUSCATION</button>
+                <div class="options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="anti-debug" checked>
+                        <span class="checkmark"></span> Anti-Debug
+                    </label>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="junk-code" checked>
+                        <span class="checkmark"></span> Junk Injection
+                    </label>
+                </div>
+            </div>
+
+            <section class="editor-section">
+                <div class="label-row">
+                    <label>PROTECTED OUTPUT</label>
+                    <div class="btn-group">
+                        <button id="copy-btn" class="btn-text">COPY</button>
+                        <button id="download-btn" class="btn-text">DOWNLOAD</button>
+                    </div>
+                </div>
+                <textarea id="output-code" readonly placeholder="-- Protected code will appear here..."></textarea>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 NEBULOUS PROTECT | INDUSTRIAL GRADE OBFUSCATION</p>
+        </footer>
     </div>
-  </header>
-
-  <main>
-    <section class="panel">
-      <h2>Input</h2>
-      <textarea id="input" placeholder="حط سكربتك هنا..."></textarea>
-      <div class="row">
-        <button id="clearBtn">مسح الكل</button>
-        <button id="obfBtn">Obfuscate</button>
-      </div>
-    </section>
-
-    <section class="panel">
-      <h2>Output</h2>
-      <textarea id="output" placeholder="السكربت المشفّر يطلع هنا..." readonly></textarea>
-      <div class="row">
-        <button id="copyBtn">نسخ</button>
-        <button id="downloadBtn">تحميل</button>
-      </div>
-    </section>
-
-    <section class="panel">
-      <h2>قائمة فك للاختبار</h2>
-      <textarea id="deobInput" placeholder="حط سكربت مشفّر هنا لتجربة فك بسيط"></textarea>
-      <div class="row">
-        <button id="tryDeobBtn">حاول فك</button>
-        <button id="clearDeobBtn">مسح</button>
-      </div>
-      <textarea id="deobOutput" placeholder="نتيجة محاولة الفك" readonly></textarea>
-    </section>
-
-    <footer>
-      <small>مصنوع بواسطة Zak · استخدم الأداة لحماية كودك فقط</small>
-    </footer>
-  </main>
-
-  <script src="obfuscator.js"></script>
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
