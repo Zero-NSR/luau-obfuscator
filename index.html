@@ -3,58 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEBULOUS | Extreme Lua Obfuscator</title>
+    <title>NEBULOUS | X-VM GENERATOR</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body class="dark-mode">
     <div class="container">
         <header>
-            <div class="logo">NEBULOUS <span>VM</span></div>
-            <div class="status-bar">
-                <span class="status-item">ALGORITHM: <span class="highlight">X-VM-G5</span></span>
-                <span class="status-item">ENTROPY: <span class="highlight">MAXIMUM</span></span>
-            </div>
+            <div class="logo">NEBULOUS <span>V6</span></div>
+            <div class="status">ENGINE: <span class="highlight">DYNAMIC-MUTATION</span></div>
         </header>
-
         <main>
-            <section class="editor-section">
-                <div class="label-row">
-                    <label>INPUT SOURCE (LUA)</label>
-                    <button id="clear-btn" class="btn-text">CLEAR</button>
-                </div>
-                <textarea id="input-code" placeholder="-- Paste your Lua code here..."></textarea>
-            </section>
-
+            <div class="editor-container">
+                <label>SOURCE LUA</label>
+                <textarea id="input-code" spellcheck="false" placeholder="-- Paste code here..."></textarea>
+            </div>
             <div class="controls">
-                <button id="obfuscate-btn" class="primary-btn">INITIALIZE OBFUSCATION</button>
-                <div class="options">
-                    <label class="checkbox-container">
-                        <input type="checkbox" id="anti-debug" checked>
-                        <span class="checkmark"></span> Anti-Debug
-                    </label>
-                    <label class="checkbox-container">
-                        <input type="checkbox" id="junk-code" checked>
-                        <span class="checkmark"></span> Junk Injection
-                    </label>
+                <button id="obfuscate-btn" class="main-btn">GENERATE ENCRYPTED VM</button>
+                <div class="switches">
+                    <label><input type="checkbox" id="anti-debug" checked> ANTI-DEBUG</label>
+                    <label><input type="checkbox" id="junk-code" checked> JUNK-VOID</label>
+                    <label><input type="checkbox" id="mutate" checked> MUTATION</label>
                 </div>
             </div>
-
-            <section class="editor-section">
-                <div class="label-row">
-                    <label>PROTECTED OUTPUT</label>
-                    <div class="btn-group">
-                        <button id="copy-btn" class="btn-text">COPY</button>
-                        <button id="download-btn" class="btn-text">DOWNLOAD</button>
-                    </div>
-                </div>
-                <textarea id="output-code" readonly placeholder="-- Protected code will appear here..."></textarea>
-            </section>
+            <div class="editor-container">
+                <label>PROTECTED OUTPUT</label>
+                <textarea id="output-code" readonly spellcheck="false" placeholder="-- Encrypted code..."></textarea>
+            </div>
+            <div class="actions">
+                <button id="copy-btn">COPY CLIPBOARD</button>
+                <button id="download-btn">DOWNLOAD .LUA</button>
+            </div>
         </main>
-
-        <footer>
-            <p>&copy; 2026 NEBULOUS PROTECT | INDUSTRIAL GRADE OBFUSCATION</p>
-        </footer>
     </div>
     <script src="script.js"></script>
 </body>
