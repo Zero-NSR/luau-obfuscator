@@ -1,174 +1,78 @@
-function randomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+// script.js
+document.addEventListener("DOMContentLoaded", ()=>{
 
-function shuffleArray(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+  const input = document.getElementById("input");
+  const output = document.getElementById("output");
+  const obfBtn = document.getElementById("obfBtn");
+  const copyBtn = document.getElementById("copyBtn");
+  const clearBtn = document.getElementById("clearBtn");
+  const downloadBtn = document.getElementById("downloadBtn");
+  const themeToggle = document.getElementById("themeToggle");
+  const modeSelect = document.getElementById("modeSelect");
+
+  const deobInput = document.getElementById("deobInput");
+  const deobOutput = document.getElementById("deobOutput");
+  const tryDeobBtn = document.getElementById("tryDeobBtn");
+  const clearDeobBtn = document.getElementById("clearDeobBtn");
+
+  // theme
+  function setTheme(isLight){
+    if(isLight) document.body.classList.add("light");
+    else document.body.classList.remove("light");
+    themeToggle.textContent = isLight ? "Light" : "Dark";
   }
-  return arr;
-}
-
-// تشفير d/v
-function obfuscateLuauStrong(code) {
-  const key = randomInt(5, 200);
-
-  let bytes = [];
-  for (let i = 0; i < code.length; i++) {
-    bytes.push(code.charCodeAt(i) ^ key);
-  }
-
-  let indexed = bytes.map((v, i) => ({ i: i + 1, v }));
-  indexed = shuffleArray(indexed);
-
-  const indexList = indexed.map(o => o.i).join(",");
-  const valueList = indexed.map(o => o.v).join(",");
-
-  const d = "_d" + randomInt(1000, 9999);
-  const v = "_v" + randomInt(1000, 9999);
-  const k = "_k" + randomInt(1000, 9999);
-  const t = "_t" + randomInt(1000, 9999);
-  const s = "_s" + randomInt(1000, 9999);
-  const f = "_f" + randomInt(1000, 9999);
-  const fakeD = "_fd" + randomInt(1000, 9999);
-  const fakeV = "_fv" + randomInt(1000, 9999);
-
-  const fakeDList = Array.from({ length: 8 }, () => randomInt(1, code.length + 20)).join(",");
-  const fakeVList = Array.from({ length: 8 }, () => randomInt(50, 255)).join(",");
-
-  return `
-local bit = bit32 or bit
-local ${k} = ${key}
-local ${d} = {${indexList}}
-local ${v} = {${valueList}}
-local ${t} = {}
-
-if #${d} == 0 or #${d} ~= #${v} then
-    error("corrupted chunk")
-end
-
-for n = 1, #${d} do
-    local pos = ${d}[n]
-    local val = ${v}[n]
-    ${t}[pos] = string.char(bit.bxor(val, ${k}))
-end
-
-local ${s} = table.concat(${t})
-
-if #${s} < 5 then
-    error("invalid chunk")
-end
-
-local ${fakeD} = {${fakeDList}}
-local ${fakeV} = {${fakeVList}}
-pcall(function()
-    local _x = {}
-    for i = 1, #${fakeD} do
-        _x[i] = string.char(bit.bxor(${fakeV}[i], ${key} + 1))
-    end
-end)
-
-local ${f}, err = loadstring(${s})
-if not ${f} then
-    return error("obfuscated chunk error: "..tostring(err))
-end
-
-return ${f}()
-`;
-}
-
-// فك d/v
-function decryptDV(obf) {
-  const keyMatch = obf.match(/local\s+[A-Za-z0-9_]+\s*=\s*(\d+)\s*\n/);
-  if (!keyMatch) return null;
-  const key = Number(keyMatch[1]);
-
-  const arrays = [...obf.matchAll(/local\s+[A-Za-z0-9_]+\s*=\s*\{([0-9,\s]+)\}/g)];
-  if (arrays.length < 2) return null;
-
-  const dArr = arrays[0][1].split(",").map(n => Number(n.trim()));
-  const vArr = arrays[1][1].split(",").map(n => Number(n.trim()));
-  if (dArr.length !== vArr.length || dArr.length === 0) return null;
-
-  let tmp = [];
-  for (let i = 0; i < dArr.length; i++) {
-    tmp[dArr[i] - 1] = String.fromCharCode(vArr[i] ^ key);
-  }
-  return tmp.join("");
-}
-
-// فك النمط: "\055\066\121..."
-function decryptSlashOct(code) {
-  const m = code.match(/local X=\{(.-)\}/s);
-  if (!m) return null;
-
-  const inner = m[1]; // "\055\066...","..."
-  const strMatches = [...inner.matchAll(/"([^"]*)"/g)];
-  if (strMatches.length === 0) return null;
-
-  let out = "";
-  for (const sm of strMatches) {
-    const part = sm[1]; // \055\066\121...
-    const octs = part.split("\\").filter(Boolean);
-    for (const o of octs) {
-      const n = parseInt(o, 10);
-      if (!isNaN(n)) out += String.fromCharCode(n);
-    }
-  }
-  return out;
-}
-
-// اختيار تلقائي
-function testDecrypt(obf) {
-  if (/local bit = bit32 or bit/.test(obf)) {
-    const r = decryptDV(obf);
-    return r || "Failed to decrypt (dv)";
-  }
-  if (/return\(function\.\.\.local X=\{/.test(obf.replace(/\s+/g, ""))) {
-    const r = decryptSlashOct(obf);
-    return r || "Failed to decrypt (oct)";
-  }
-  return "Unknown format";
-}
-
-document.getElementById("obfuscateBtn").addEventListener("click", () => {
-  const input = document.getElementById("input").value;
-  document.getElementById("output").value = obfuscateLuauStrong(input);
-});
-
-document.getElementById("decryptBtn").addEventListener("click", () => {
-  const input = document.getElementById("input").value;
-  document.getElementById("output").value = testDecrypt(input);
-});
-
-document.getElementById("copyBtn").addEventListener("click", () => {
-  navigator.clipboard.writeText(document.getElementById("output").value);
-});
-
-const menuBtn = document.getElementById("menuBtn");
-const sideMenu = document.getElementById("sideMenu");
-
-menuBtn.addEventListener("click", () => {
-  sideMenu.classList.toggle("open");
-});
-
-document.querySelectorAll(".menu-item").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const page = btn.getAttribute("data-page");
-
-    if (page === "encrypt") {
-      document.querySelector("h1").innerText = "Luau Obfuscator";
-      document.getElementById("input").placeholder = "Paste your Luau code here";
-      document.getElementById("output").placeholder = "Obfuscated code will appear here";
-    }
-
-    if (page === "decrypt") {
-      document.querySelector("h1").innerText = "Decrypt Tester";
-      document.getElementById("input").placeholder = "Paste obfuscated code here";
-      document.getElementById("output").placeholder = "Decrypted result will appear here";
-    }
-
-    sideMenu.classList.remove("open");
+  themeToggle.addEventListener("click", ()=>{
+    const isLight = !document.body.classList.contains("light");
+    setTheme(isLight);
   });
+  setTheme(false);
+
+  // clear
+  clearBtn.addEventListener("click", ()=>{ input.value = ""; output.value = ""; });
+
+  // obfuscate
+  obfBtn.addEventListener("click", ()=>{
+    let code = input.value;
+    if(!code.trim()){ alert("حط سكربتك أول"); return; }
+    // mode can be used to tune layers later
+    let mode = modeSelect.value;
+    // call obfuscator
+    try{
+      let res = Obf.process(code, mode);
+      output.value = res;
+    }catch(e){
+      output.value = "-- Error during obfuscation: " + e.message;
+    }
+  });
+
+  // copy
+  copyBtn.addEventListener("click", ()=>{
+    output.select();
+    document.execCommand("copy");
+  });
+
+  // download
+  downloadBtn.addEventListener("click", ()=>{
+    const blob = new Blob([output.value], {type:"text/plain;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "obfuscated.lua";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  // deobfuscate attempt
+  tryDeobBtn.addEventListener("click", ()=>{
+    const payload = deobInput.value;
+    if(!payload.trim()){ alert("حط سكربت مشفّر"); return; }
+    const res = Obf.tryDeobfuscate(payload);
+    if(res) deobOutput.value = res;
+    else deobOutput.value = "-- لم يتم العثور على جدول تشفير مباشر أو المفتاح";
+  });
+
+  clearDeobBtn.addEventListener("click", ()=>{ deobInput.value=""; deobOutput.value=""; });
+
 });
